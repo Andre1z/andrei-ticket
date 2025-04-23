@@ -1,4 +1,3 @@
-# Aplicación para generar tickets de compra en Python
 import datetime
 
 def generar_ticket(productos, precios, cantidades):
@@ -20,10 +19,26 @@ def generar_ticket(productos, precios, cantidades):
 
     return ticket
 
-# Ejemplo de uso
-productos = ["Manzana", "Pan", "Leche"]
-precios = [1.00, 2.50, 1.80]
-cantidades = [3, 1, 2]
+def ingresar_datos():
+    productos = []
+    precios = []
+    cantidades = []
 
+    while True:
+        producto = input("Ingrese el nombre del producto (o 'salir' para terminar): ")
+        if producto.lower() == "salir":
+            break
+        precio = float(input(f"Ingrese el precio de {producto}: "))
+        cantidad = int(input(f"Ingrese la cantidad de {producto}: "))
+
+        productos.append(producto)
+        precios.append(precio)
+        cantidades.append(cantidad)
+
+    return productos, precios, cantidades
+
+# Uso
+print("Bienvenido al generador de tickets.")
+productos, precios, cantidades = ingresar_datos()
 ticket = generar_ticket(productos, precios, cantidades)
-print(ticket)
+print("\n", ticket)
