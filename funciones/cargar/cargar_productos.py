@@ -1,8 +1,14 @@
 import json
-def cargar_productos_json():
+import os
+
+def cargar_productos():
     try:
-        with open("productos_unicos.json", "r") as archivo:
+        # Obtener la ruta absoluta del archivo JSON
+        ruta_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../productos_unicos.json")
+
+        # Cargar el archivo JSON
+        with open(ruta_json, "r") as archivo:
             return json.load(archivo)
     except FileNotFoundError:
-        messagebox.showerror("Error", "El archivo 'productos_unicos.json' no fue encontrado.")
+        print("El archivo 'productos_unicos.json' no fue encontrado.")
         return {}

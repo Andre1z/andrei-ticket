@@ -1,11 +1,9 @@
 import datetime
+from tkinter import messagebox  # Importación agregada
+from funciones.generar_ticket.guardar_ticket_pdf import guardar_ticket_pdf
+import datetime
 
-def generar_ticket():
-    global productos_seleccionados
-    if not productos_seleccionados:
-        messagebox.showerror("Error", "No se han seleccionado productos.")
-        return
-
+def generar_ticket(productos_seleccionados):
     fecha_hora = datetime.datetime.now()
     encabezado_ticket = f"--- TICKET DE COMPRA ---\nFecha y hora: {fecha_hora}\n\n"
 
@@ -18,4 +16,4 @@ def generar_ticket():
         total += subtotal
         datos.append([producto['nombre'], str(producto['cantidad']), f"{producto['precio']:.2f} €", f"{subtotal:.2f} €"])
 
-    guardar_ticket_pdf(encabezado_ticket, encabezados, datos, total)
+    return encabezado_ticket, encabezados, datos, total

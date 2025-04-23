@@ -1,5 +1,6 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from tkinter import messagebox  # Importación agregada
 
 def guardar_ticket_pdf(encabezado_ticket, encabezados, datos, total, nombre_archivo="ticket.pdf"):
     try:
