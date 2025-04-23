@@ -1,43 +1,88 @@
 import datetime
 import json
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 def cargar_productos_json():
     try:
         with open("productos_unicos.json", "r") as archivo:
-            return json.load(archivo)
+            productos = json.load(archivo)
+            print("Productos cargados correctamente desde 'productos_unicos.json'.")
+            return productos
     except FileNotFoundError:
         print("El archivo 'productos_unicos.json' no fue encontrado.")
         return {}
 
 def generar_ticket(productos_seleccionados):
     fecha_hora = datetime.datetime.now()
-    ticket = f"--- TICKET DE COMPRA ---\nFecha y hora: {fecha_hora}\n\n"
+    encabezado_ticket = f"--- TICKET DE COMPRA ---\nFecha y hora: {fecha_hora}\n\n"
     total = 0
 
-    ticket += "Producto\tCantidad\tPrecio\tSubtotal\n"
-    ticket += "-" * 50 + "\n"
-
+    # Preparar datos estructurados
+    encabezados = ["Producto", "Cantidad", "Precio (€)", "Subtotal (€)"]
+    datos = []
     for producto in productos_seleccionados:
         subtotal = producto['precio'] * producto['cantidad']
         total += subtotal
-        ticket += f"{producto['nombre']}\t{producto['cantidad']}\t{producto['precio']:.2f}\t{subtotal:.2f}\n"
+        datos.append([producto['nombre'], str(producto['cantidad']), f"{producto['precio']:.2f} €", f"{subtotal:.2f} €"])
+    return encabezado_ticket, encabezados, datos, total
 
-    ticket += "-" * 50 + "\n"
-    ticket += f"Total:\t\t\t\t{total:.2f}\n"
-    ticket += "-" * 50 + "\n"
+def guardar_ticket_pdf(encabezado_ticket, encabezados, datos, total, nombre_archivo="ticket.pdf"):
+    try:
+        c = canvas.Canvas(nombre_archivo, pagesize=letter)
+        c.setFont("Helvetica", 10)
 
-    return ticket
+        # Añadir encabezado del ticket
+        y = 750  # Posición vertical inicial
+        for linea in encabezado_ticket.split("\n"):
+            c.drawString(50, y, linea)
+            y -= 15  # Reducir posición vertical para la próxima línea
+
+        y -= 15  # Separación extra antes de las tablas
+
+        # Configurar posiciones para las columnas
+        x_producto = 50
+        x_cantidad = 250
+        x_precio = 300
+        x_subtotal = 400
+
+        # Dibujar encabezados de las columnas
+        c.drawString(x_producto, y, encabezados[0])
+        c.drawString(x_cantidad, y, encabezados[1])
+        c.drawString(x_precio, y, encabezados[2])
+        c.drawString(x_subtotal, y, encabezados[3])
+        y -= 20  # Reducir posición vertical
+
+        # Dibujar línea separadora
+        c.line(50, y, 500, y)
+        y -= 20
+
+        # Dibujar datos de las filas
+        for fila in datos:
+            c.drawString(x_producto, y, fila[0])
+            c.drawString(x_cantidad, y, fila[1])
+            c.drawString(x_precio, y, fila[2])
+            c.drawString(x_subtotal, y, fila[3])
+            y -= 20
+
+        # Dibujar línea final
+        c.line(50, y, 500, y)
+        y -= 20
+
+        # Dibujar total
+        c.drawString(x_producto, y, "Total:")
+        c.drawString(x_subtotal, y, f"{total:.2f} €")
+        c.save()
+        print(f"Ticket guardado correctamente en el archivo '{nombre_archivo}'.")
+    except Exception as e:
+        print(f"Error al guardar el ticket en PDF: {e}")
 
 def seleccionar_productos(productos_json):
     productos_seleccionados = []
 
     while True:
-        print("\nLista de productos disponibles:")
-        for id_producto, datos in productos_json.items():
-            print(f"ID: {id_producto} - Nombre: {datos['nombre']} - Precio: {datos['precio']:.2f}")
-
-        id_seleccionado = input("\nIngrese el ID del producto (o 'salir' para terminar): ")
-        if id_seleccionado.lower() == "salir":
+        id_seleccionado = input("\nIngrese el ID del producto (o 'exit' para terminar): ")
+        if id_seleccionado.lower() == "exit":
             break
         if id_seleccionado not in productos_json:
             print("ID no válido. Intente de nuevo.")
@@ -59,8 +104,8 @@ productos_json = cargar_productos_json()
 if productos_json:
     productos_seleccionados = seleccionar_productos(productos_json)
     if productos_seleccionados:
-        ticket = generar_ticket(productos_seleccionados)
-        print("\n", ticket)
+        encabezado_ticket, encabezados, datos, total = generar_ticket(productos_seleccionados)
+        guardar_ticket_pdf(encabezado_ticket, encabezados, datos, total)
     else:
         print("No se seleccionaron productos.")
 else:
